@@ -5,6 +5,8 @@ formatSpec = '%f %f';
 
 X = fscanf(fileID,formatSpec,sizeX);
 X = X';
+distance = 100;
+thresh = 400;
 
 %%====================================================
 %% STEP 1: Choose initial values for the parameters.
@@ -130,11 +132,41 @@ set(gcf,'color','white') % White background for the figure.
  gridX = [A(:), B(:)];
  
  % Calculate the Gaussian response for every value in the grid.
- z1 = gaussianND(gridX, mu(1, :), sigma{1});
- z2 = gaussianND(gridX, mu(2, :), sigma{2});
- z3 = gaussianND(gridX, mu(3, :), sigma{3}); 
+z1 = gaussianND(gridX, mu(1, :), sigma{1});
+z2 = gaussianND(gridX, mu(2, :), sigma{2});
+z3 = gaussianND(gridX, mu(3, :), sigma{3}); 
 % z4 = gaussianND(gridX, mu(4, :), sigma{4});
 % z5 = gaussianND(gridX, mu(4, :), sigma{5});
+z1out = std(z1)*10^7;
+z2out = std(z2)*10^7;
+z3out = std(z3)*10^7;
+z1num = 0;
+z2num =0;
+z3num = 0;
+for i = 1: max(size(X'))
+    test = X;
+   d = [mu(1,1), mu(1,2); test(i,1), test(i,2) ];
+   if (pdist(d,'euclidean') <= distance)
+       z1num = z1num + 1;
+   end
+end
+for i = 1: max(size(X'))
+    test = X;
+   d = [mu(2,1), mu(2,2); test(i,1), test(i,2) ];
+   if (pdist(d,'euclidean') <= distance)
+       z2num = z2num + 1;
+   end
+end
+for i = 1: max(size(X'))
+    test = X;
+   d = [mu(3,1), mu(3,2); test(i,1), test(i,2) ];
+   if (pdist(d,'euclidean') <= distance)
+       z3num = z3num + 1;
+   end
+end
+z1num;
+z2num;
+z3num;
  
  % Reshape the responses back into a 2D grid to be plotted with contour.
  Z1 = reshape(z1, gridSize, gridSize);
@@ -144,9 +176,17 @@ set(gcf,'color','white') % White background for the figure.
 % Z5 = reshape(z5, gridSize, gridSize);
  
  % Plot the contour lines to show the pdf over the data.
- [C, h] = contour(u, u, Z1, 'LineWidth', 3);
- [C, h] = contour(u, u, Z2, 'LineWidth', 3);
- [C, h] = contour(u, u, Z3, 'LineWidth', 3);
+ if (z1num >= thresh)
+     [C, h] = contour(u, u, Z1, 'LineWidth', 3);
+ end
+ if (z2num >= thresh)
+     [C, h] = contour(u, u, Z2, 'LineWidth', 3);
+ end
+if (z3num >= thresh)
+    [C, h] = contour(u, u, Z3, 'LineWidth', 3);
+end
+
+ 
 % [C, h] = contour(u, u, Z4);
 % [C, h] = contour(u, u, Z5);
  axis ij
